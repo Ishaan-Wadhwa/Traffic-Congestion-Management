@@ -58,7 +58,26 @@ if uploaded_file:
     with tab4:
         st.subheader("🔮 Traffic Prediction")
         predictions = predict_traffic(df)
-        st.json(predictions)
+
+        if isinstance(predictions, dict):
+        # Convert prediction dict to DataFrame
+            pred_df = pd.DataFrame(list(predictions.items()), columns=["Location ID", "Predicted Volume"])
+            pred_df["Predicted Volume"] = pred_df["Predicted Volume"].astype(float)
+
+        # Show Metrics for each location
+            st.markdown("### 📍 Location-wise Predictions")
+            cols = st.columns(len(pred_df))
+            for i, row in pred_df.iterrows():
+                cols[i].metric(label=f"Location {row['Location ID']}", value=f"{row['Predicted Volume']:.2f} vehicles")
+
+        # Show a bar chart for the predictions
+            st.markdown("### 📊 Predicted Traffic Volume")
+            st.bar_chart(pred_df.set_index("Location ID"))
+
+        else:
+            st.warning("Prediction format is invalid.")
+
+    # Existing visualizations
         plot_prediction_bar(predictions)
         plot_prediction_accuracy(df, predictions)
 
